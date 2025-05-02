@@ -1,28 +1,48 @@
-import yt_dlp  # 유튜브 및 기타 플랫폼에서 미디어를 다운로드할 수 있는 라이브러리
+# downloader.py
+import yt_dlp  # 유튜브 영상 다운로드를 위한 라이브러리
 import os      # 경로 조작을 위한 표준 라이브러리
+
+# 🔍 영상에서 사용 가능한 해상도 목록 가져오기
+def get_available_resolutions(url):
+    """
+    영상의 사용 가능한 화질 목록 반환 (예: ['2160p', '1440p', '1080p', ...])
+    """
+    ydl_opts = {'quiet': True}  # 로그 출력 최소화
+    resolutions = []
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)  # 다운로드 없이 정보만 추출
+        formats = info.get("formats", [])
+
+        for f in formats:
+            height = f.get("height")  # 영상 해상도 정보
+            ext = f.get("ext")        # 파일 형식 (mp4 등)
+            if height and ext == 'mp4':  # mp4 영상만 필터링
+                res_label = f"{height}p"
+                if res_label not in resolutions:
+                    resolutions.append(res_label)
+
+    # 높은 해상도부터 정렬
+    resolutions = sorted(resolutions, key=lambda x: int(x.replace("p", "")), reverse=True)
+    return resolutions
 
 # 🎥 영상 다운로드 함수
 def download_video(url, save_path, quality='1080p'):
-    # 화질에 따른 resolution filter 설정
-    resolution_map = {
-        "1080p": "bestvideo[height<=1080][ext=mp4]",
-        "720p": "bestvideo[height<=720][ext=mp4]",
-        "480p": "bestvideo[height<=480][ext=mp4]",
-        "360p": "bestvideo[height<=360][ext=mp4]",
-    }
-    selected_format = resolution_map.get(quality, resolution_map["720p"])  # fallback
+    # 선택된 화질(예: 1080p → 1080)로 필터 조건 생성
+    height = quality.replace("p", "")
+    format_string = f"bestvideo[height={height}][ext=mp4]"
 
     ydl_opts = {
-        'format': selected_format,
-        'outtmpl': os.path.join(save_path, '%(title)s_video.%(ext)s'),
-        'noplaylist': True,
-        'overwrites': True,
-        'merge_output_format': 'mp4',  # audio와 merge용
+        'format': format_string,  # 사용자가 선택한 화질
+        'outtmpl': os.path.join(save_path, '%(title)s_video.%(ext)s'),  # 저장 경로 및 파일명 지정
+        'noplaylist': True,     # 재생목록이 아닌 단일 영상만 다운로드
+        'overwrites': True,     # 기존 파일이 있으면 덮어쓰기
+        'merge_output_format': 'mp4',  # 오디오와 병합 시 사용할 형식
     }
 
+    # yt_dlp 객체 생성 후 다운로드 실행
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
-
+        ydl.download([url])  # 리스트 형식으로 URL 전달
 
 # 🎵 오디오 다운로드 함수
 def download_audio(url, save_path):
