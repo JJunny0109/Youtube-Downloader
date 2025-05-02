@@ -1,8 +1,12 @@
-# gui_main.py
 import tkinter as tk
 from tkinter import filedialog
 import threading  # ❗ 다운로드 중 응답 없음 방지를 위한 쓰레딩
 from downloader import get_available_resolutions, download_video, download_audio
+
+# ✅ 진행률 텍스트를 상태 라벨에 실시간 표시하는 함수
+def update_status_text(text):
+    status_label.config(text=text)
+    root.update_idletasks()
 
 # 폴더 선택 함수
 def choose_folder():
@@ -48,8 +52,10 @@ def _do_download():
     root.update()
 
     try:
-        download_video(url, path, quality)
-        download_audio(url, path)
+        # ✅ 영상 다운로드 진행률 표시 콜백 전달
+        download_video(url, path, quality, progress_callback=update_status_text)
+        # ✅ 오디오 다운로드 진행률 표시 콜백 전달
+        download_audio(url, path, progress_callback=update_status_text)
         status_label.config(text="✅ 다운로드 완료!")
     except Exception as e:
         status_label.config(text=f"❌ 오류 발생: {e}")
