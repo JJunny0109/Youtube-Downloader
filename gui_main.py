@@ -11,24 +11,23 @@ def choose_folder():
 
 # 다운로드 시작 함수
 def start_download():
-    url = entry.get()  # 입력창에서 URL 가져오기
-    path = folder_path.get()  # 선택한 저장 경로 가져오기
+    url = entry.get()
+    path = folder_path.get()
+    quality = selected_quality.get()  # 🔹 선택된 화질을 가져옴
 
-    # 저장 경로가 비어 있으면 경고 메시지
     if not path:
         status_label.config(text="❗ 저장 폴더를 먼저 선택하세요.")
         return
 
-    status_label.config(text="🎥 다운로드 중...")  # 상태 표시 업데이트
-    root.update()  # GUI 업데이트
+    status_label.config(text="🎥 다운로드 중...")
+    root.update()
 
     try:
-        # 영상과 오디오 다운로드 실행 (저장 경로 포함)
-        download_video(url, path)
+        download_video(url, path, quality)  # 🔹 선택한 화질 전달
         download_audio(url, path)
-        status_label.config(text="✅ 다운로드 완료!")  # 성공 메시지
+        status_label.config(text="✅ 다운로드 완료!")
     except Exception as e:
-        status_label.config(text=f"❌ 오류 발생: {e}")  # 예외 발생 시 에러 메시지 출력
+        status_label.config(text=f"❌ 오류 발생: {e}")
 
 # 🔽 GUI 창 설정 시작 🔽
 
@@ -49,6 +48,16 @@ entry.pack(pady=5)
 # 폴더 선택 버튼
 folder_btn = tk.Button(root, text="📂 저장 폴더 선택", command=choose_folder)
 folder_btn.pack(pady=5)
+
+# 🔽 화질 선택 드롭다운 구성 (버튼 위에 추가)
+quality_options = ["1080p", "720p", "480p", "360p"]
+selected_quality = tk.StringVar(value=quality_options[0])  # 기본 선택값은 1080p
+
+quality_label = tk.Label(root, text="화질 선택:")
+quality_label.pack()
+
+quality_menu = tk.OptionMenu(root, selected_quality, *quality_options)
+quality_menu.pack()
 
 # 다운로드 시작 버튼
 btn = tk.Button(root, text="⬇️ 다운로드 시작", command=start_download)

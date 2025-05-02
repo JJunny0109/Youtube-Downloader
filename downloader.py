@@ -2,17 +2,27 @@ import yt_dlp  # 유튜브 및 기타 플랫폼에서 미디어를 다운로드�
 import os      # 경로 조작을 위한 표준 라이브러리
 
 # 🎥 영상 다운로드 함수
-def download_video(url, save_path):
+def download_video(url, save_path, quality='1080p'):
+    # 화질에 따른 resolution filter 설정
+    resolution_map = {
+        "1080p": "bestvideo[height<=1080][ext=mp4]",
+        "720p": "bestvideo[height<=720][ext=mp4]",
+        "480p": "bestvideo[height<=480][ext=mp4]",
+        "360p": "bestvideo[height<=360][ext=mp4]",
+    }
+    selected_format = resolution_map.get(quality, resolution_map["720p"])  # fallback
+
     ydl_opts = {
-        'format': 'bestvideo[ext=mp4]',  # mp4 확장자의 최고 화질 영상 선택
-        'outtmpl': os.path.join(save_path, '%(title)s_video.%(ext)s'),  # 저장 경로 및 파일명 지정
-        'noplaylist': True,     # 재생목록이 아닌 단일 영상만 다운로드
-        'overwrites': True      # 기존 파일이 있으면 덮어쓰기
+        'format': selected_format,
+        'outtmpl': os.path.join(save_path, '%(title)s_video.%(ext)s'),
+        'noplaylist': True,
+        'overwrites': True,
+        'merge_output_format': 'mp4',  # audio와 merge용
     }
 
-    # yt_dlp 객체 생성 후 다운로드 실행
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])  # 리스트 형식으로 URL 전달
+        ydl.download([url])
+
 
 # 🎵 오디오 다운로드 함수
 def download_audio(url, save_path):
