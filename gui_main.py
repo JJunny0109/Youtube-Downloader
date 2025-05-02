@@ -106,7 +106,7 @@ btn = tk.Button(root, text="⬇️ 다운로드 시작", command=start_download)
 btn.pack(pady=10)
 
 # 상태 출력
-status_label = tk.Label(root, text="")
+status_label = tk.Label(root, text="", wraplength=450, justify="left")
 status_label.pack()
 
 # 메인 루프 시작
